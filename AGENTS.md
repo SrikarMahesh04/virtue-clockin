@@ -6,3 +6,4 @@
 - Read `frontend/AGENTS.md` and the installed Next.js documentation before applicable frontend changes.
 - Production uses the Netlify edge API proxy and a separately hosted FastAPI/PostgreSQL service. Preserve authenticated visitor-IP forwarding, HttpOnly secure cookies, CSRF checks and exact production origins. See `docs/NETLIFY.md`.
 - Never commit credentials, environment files, database exports, employee records, logs, provider state or build artifacts.
+- Neon CLI commands must use `--no-env-pull` for link, checkout and deploy. The ignored `.neon` context selects the cloud branch; it must not redirect local development to production. Neon MCP is project-scoped, OAuth-only and read-only.

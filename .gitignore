@@ -19,6 +19,11 @@ playwright-report/
 backend/logs/*.log*
 tmp/
 .netlify/
+.neon
+.neon/
+.codex/
+.agents/
+skills-lock.json
 *.pem
 *.key
 *.p12

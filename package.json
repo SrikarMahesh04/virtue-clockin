@@ -1,0 +1,14 @@
+{
+  "name": "virtue-clockin-infrastructure",
+  "private": true,
+  "type": "module",
+  "description": "Neon policy tooling; application packages live in frontend and backend.",
+  "scripts": {
+    "neon:plan": "neon config plan",
+    "neon:deploy": "neon deploy --no-env-pull"
+  },
+  "devDependencies": {
+    "@neon/config": "1.8.6",
+    "@neon/env": "1.5.3"
+  }
+}

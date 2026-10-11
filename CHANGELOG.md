@@ -1,5 +1,15 @@
 # Changelog
 
+## 11-Oct-2026 - Neon project tooling
+
+- Added the requested minimal `neon.ts` and locked root infrastructure dependencies, separate from frontend dependencies. Linked the existing cloud production branch locally; plan/deploy confirmed no remote policy changes.
+- Installed official Neon overview/PostgreSQL skills and a project-scoped read-only OAuth MCP entry. Added Git ignores for local agent/provider state and documented `--no-env-pull` to preserve local development configuration.
+
+## 11-Oct-2026 - Zero-cost hosting requirement
+
+- Changed the deployment runbook to Netlify Free, Render Free Python hosting and Neon Free PostgreSQL; excluded Render's expiring free database, paid upgrades and payment methods.
+- Documented quota suspension, backend wake-up delays, free email/map limitations and private administrator setup without a Render shell. No cloud resources or data migrations were created by these documentation changes.
+
 ## 11-Oct-2026 - Netlify production deployment preparation
 
 - Added Netlify monorepo build settings and a same-origin API edge proxy. Hosted builds no longer default to a visitor's localhost API.
