@@ -21,6 +21,11 @@ def main():
     first = sub.add_parser("bootstrap", help="Create the first real Super Administrator")
     first.add_argument("--email", required=True)
     first.add_argument("--name", required=True)
+    first.add_argument(
+        "--activation-link",
+        action="store_true",
+        help="Create a pending first administrator and privately output a single-use activation link",
+    )
     reset = sub.add_parser(
         "replace-accounts",
         help="Delete all accounts and linked attendance/history; create a fresh Super Admin",
@@ -102,6 +107,18 @@ def main():
         if args.command == "bootstrap":
             if db.scalar(select(User)):
                 parser.error("Bootstrap is permitted only for an empty user table")
+            if args.activation_link:
+                user = User(email=email, name=args.name, role="super_admin")
+                db.add(user)
+                db.flush()
+                token = challenge(db, user, "activation")
+                log_event(db, user, "operator.bootstrap_activation", user.id)
+                db.commit()
+                print(
+                    f"Private activation link (30 minutes): "
+                    f"{settings().app_base_url}/activate#token={token}"
+                )
+                return
             password = getpass.getpass("New administrator password: ")
             print(f"Password strength: {password_strength(password)} (advisory)")
             confirmation = getpass.getpass("Confirm password: ")

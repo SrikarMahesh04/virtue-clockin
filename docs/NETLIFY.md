@@ -20,7 +20,7 @@ Office network verification uses Netlify's `context.ip`, authenticated to FastAP
 
 ## Netlify project
 
-Import the GitHub repository, select `main`, and use the root `netlify.toml`. Its base is `frontend`, build command is `pnpm build`, and publish directory is `.next`. Netlify automatically supplies its Next.js adapter. Do not use a static HTML export or upload the source folder with Netlify Drop.
+Import the GitHub repository, select `main`, and use the root `netlify.toml`. Its base is `frontend`, build command is `pnpm build`, and publish directory is `.next`. The explicit `@netlify/plugin-nextjs` entry ensures App Router output is adapted in this multi-package repository. A successful deployment must include the generated Next.js server function; raw `.next` files alone cannot serve the application. Do not use a static HTML export or upload the source folder with Netlify Drop.
 
 The file sets Node.js 22, pnpm 11.25 and an empty `NEXT_PUBLIC_API_BASE_URL`, selecting the same-origin proxy. Set these private values in Netlify's environment dashboard with **Functions** scope and **Production** context only:
 
@@ -30,6 +30,8 @@ The file sets Node.js 22, pnpm 11.25 and an empty `NEXT_PUBLIC_API_BASE_URL`, se
 | `CLOCKIN_PROXY_SECRET` | Private random value of at least 32 characters, identical to the backend value. |
 
 Generate the shared secret privately, for example with Python's `secrets.token_urlsafe(48)`; do not commit or paste it into chat. Redeploy after changing edge environment variables. A missing backend/secret produces a truthful API-not-configured response; publishing the frontend alone does not make attendance functional.
+
+If Free does not allow individual scopes, use the available server scopes and keep values restricted to Production. Mark the proxy value as secret. Never prefix either value with `NEXT_PUBLIC_` or include it in source code.
 
 Set optional `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` in **Builds / Production** scope. A Maps JavaScript browser key is visible in browser assets by design: restrict it to the exact frontend website and required Google APIs. Backend credentials must never have a `NEXT_PUBLIC_` prefix. See `GOOGLE_MAPS.md`.
 
@@ -68,6 +70,8 @@ Set these variables privately in Render:
 Leave SMTP unset on the current free deployment. The start script applies compatible Alembic migrations before starting the API. Back up existing databases before release. Confirm `/ready` returns 200, then bootstrap a real administrator privately with the existing CLI using a temporary operator environment connected to the cloud database. Render Free has no dashboard shell or one-off jobs; do not place bootstrap credentials in the build/start command or logs. Preserve the local development environment files. An empty cloud database does not contain local accounts. Transfer any existing data only through an approved encrypted database migration; never through GitHub.
 
 Production JSON logs go to provider stdout and the local rotating log file. Hosting filesystems may be ephemeral; configure provider log retention/drains and database backups according to company policy. No passwords, tokens, proxy secrets or submitted request bodies are logged by the proxy.
+
+For a new empty database, `python -m app.cli bootstrap --email <owner-email> --name <owner-name> --activation-link` creates only a pending Super Admin and outputs a private single-use activation link valid for 30 minutes. Run it in a temporary operator process connected to the intended database with the hosted `APP_BASE_URL`; do not modify local `.env` files. The empty-table guard and transaction lock prevent additional bootstrap accounts. Keep output out of shared logs and Git. The owner opens the link and chooses their password and PIN privately. This is separate from `issue-link`, whose production restriction remains in place.
 
 ## Local development and approved releases
 

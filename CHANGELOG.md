@@ -1,5 +1,11 @@
 # Changelog
 
+## 11-Oct-2026 - Hosted routing and first account activation
+
+- Explicitly enabled Netlify's Next.js adapter so App Router pages are deployed with their server function rather than raw build output.
+- Added an empty-database-only operator bootstrap activation option. The first Super Admin chooses credentials privately through a single-use link; no default password, PIN or employee data is created.
+- Clarified Free environment scopes and private operator activation in the hosting runbook.
+
 ## 11-Oct-2026 - Neon project tooling
 
 - Added the requested minimal `neon.ts` and locked root infrastructure dependencies, separate from frontend dependencies. Linked the existing cloud production branch locally; plan/deploy confirmed no remote policy changes.

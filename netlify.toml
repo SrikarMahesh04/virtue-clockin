@@ -10,6 +10,10 @@
   # Browser requests stay on the Netlify origin; the edge proxy calls FastAPI.
   NEXT_PUBLIC_API_BASE_URL = ""
 
+# Explicitly adapt App Router output in this multi-package repository.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [[edge_functions]]
   function = "clockin-api"
   path = "/api/v1/*"
