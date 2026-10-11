@@ -31,4 +31,4 @@ Configure your office and employee accounts after signing in. Maps and email ser
 
 Never commit passwords, API keys, database credentials or private environment files. Example configuration contains placeholders only; local configuration, runtime logs and generated build files are excluded from Git. Existing accounts and attendance data are not included in this repository.
 
-See [testing](TESTING.md) and [deployment](docs/DEPLOYMENT.md) for contributor and operator guidance.
+See [deployment](docs/DEPLOYMENT.md) for operator guidance. Automated test suites and the GitHub test workflow are not included at this stage.

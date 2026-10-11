@@ -17,7 +17,7 @@
 - [x] Calendar views, employee/all-employee Holiday and Work from home scheduling, in-app notifications.
 - [x] Filtered attendance/CSV including Work from home, true dashboard counters.
 - [x] Administrator-only workspace, header sign-out, no admin punch APIs; removed integration-readiness/SSO UI.
-- [x] Automated backend/PostgreSQL, frontend and browser workflow tests; see TESTING.md for commands.
+- Automated test suites and the GitHub test workflow were removed at the user's request for this development stage. Local lint, type, contract and build checks remain available through `scripts/check.ps1`.
 - [x] Local setup, accepted decisions and production integration runbook.
 
 ## Company configuration / later releases
@@ -29,6 +29,6 @@
 - [ ] Microsoft SSO, Manager delegation, app-managed MFA, multi-office and payroll (deferred).
 - [ ] Scheduler-backed reminders and periodic reconciliation/cleanup (deferred, explicitly unavailable).
 
-Every behavior change must update the backend, contract, frontend, affected tests and relevant documentation together. Production readiness is not implied by completed local implementation.
+Every behavior change must update the backend, contract, frontend and relevant documentation together. Production readiness is not implied by completed local implementation.
 
 Security & Audit and My Notes are retired from both workspaces and the API. Historical database tables remain untouched; no active note or database audit operations remain. Internal rotating JSON logs live in backend/logs/clockin.log; see backend/logs/README.md. Attendance/report toolbars use independent Start date and End date calendar boxes separated by 'to'.

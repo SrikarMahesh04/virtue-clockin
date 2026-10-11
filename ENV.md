@@ -17,7 +17,7 @@ Copy the separate frontend/backend `.env.example` files to ignored local environ
 
 Frontend: `NEXT_PUBLIC_API_BASE_URL` is the browser-safe API origin, default http://localhost:8000. For local HTTP loopback addresses, its hostname follows the browser (localhost or 127.0.0.1) to keep session cookies same-site. Custom remote API URLs remain unchanged. No API proxy is used, preserving the backend's direct office-network verification. Office timezone comes from the API.
 
-Tests: `TEST_DATABASE_URL` must target a separate PostgreSQL database with test in its name. Synthetic fixtures stay in isolated schemas. Optional Windows `DISABLE_SQLALCHEMY_CEXT_RUNTIME=1` selects SQLAlchemy's supported pure-Python runtime.
+Optional Windows `DISABLE_SQLALCHEMY_CEXT_RUNTIME=1` selects SQLAlchemy's supported pure-Python runtime.
 
 Coordinates, geofence, accuracy, approved office CIDRs and weekly offs belong in System settings with internal change logs. Shift start/end intervals belong in shift definitions and effective assignments. No real office values are hardcoded.
 

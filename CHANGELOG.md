@@ -1,5 +1,11 @@
 # Changelog
 
+## 11-Oct-2026 - Automated test setup removed
+
+- Removed backend, frontend and browser test files, test-only configuration/dependencies/helpers, and the GitHub Actions test workflow at the user's request.
+- Updated lockfiles, development scripts and documentation. Application health/readiness checks and runtime behavior remain unchanged. Historical workflow runs are not erased by this change.
+- Pinned existing frontend package versions while regenerating its lockfile, and disabled automatic peer installation so removed test runners are not restored. Local lint/type/contract checks and the production build passed; no automated tests were run.
+
 ## 11-Oct-2026 - Repository publication cleanup
 
 - Removed the company favicon while retaining the full portal/login logo.

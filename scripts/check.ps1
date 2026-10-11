@@ -8,8 +8,6 @@ try {
     if ($LASTEXITCODE) { throw 'Backend format check failed' }
     uv run mypy app
     if ($LASTEXITCODE) { throw 'Backend typing failed' }
-    uv run pytest -q
-    if ($LASTEXITCODE) { throw 'Backend tests failed' }
 } finally { Pop-Location }
 Push-Location $taskRoot
 try {
@@ -22,8 +20,6 @@ try {
     if ($LASTEXITCODE) { throw 'Frontend typing failed' }
     pnpm lint
     if ($LASTEXITCODE) { throw 'Frontend lint failed' }
-    pnpm test
-    if ($LASTEXITCODE) { throw 'Frontend tests failed' }
     pnpm build
     if ($LASTEXITCODE) { throw 'Frontend build failed' }
 } finally { Pop-Location }

@@ -2,7 +2,7 @@
 
 ## General
 - Code must reflect true production behavior. No hardcoded test accounts, dummy metrics, fake API success, prefilled employee data or silent fixture fallbacks.
-- Each change must include relevant backend, frontend, schema, docs and test updates. Keep pull requests focused and reference PRD IDs.
+- Each change must include relevant backend, frontend, schema and documentation updates. Keep pull requests focused and reference PRD IDs.
 - Prefer explicit, readable modules over generic frameworks; meaningful names; eliminate duplicated policy calculations.
 - Validate inputs on both UX boundary and server; server is authoritative.
 - Keep secrets out of code and logs. `.env.example` contains names/documented placeholders, no credentials.
@@ -14,7 +14,7 @@
 - Prefer accessible semantic HTML and keyboard interactions; use Tailwind design tokens, avoid scattered literal hex values.
 - Distinguish UI states as loading / empty / error / needs configuration / ready. Never display 0 when request failed.
 - Forms show validation errors without disclosing sensitive internal behavior.
-- Use ESLint, formatter (Prettier), TS compile and component tests in CI.
+- Use ESLint, formatter (Prettier) and TypeScript compile checks locally. Automated test suites and their GitHub workflow are currently removed.
 
 ## Backend (Python FastAPI)
 - Python 3 typing and Pydantic v2 for external DTOs. Ruff lint + format; selected Python static type checker.
@@ -24,7 +24,6 @@
 - Transactions for Punch In/Out and approvals; explicit concurrency-safe conflicts and idempotency semantics.
 - Standard structured error shape and request ID; use stable error codes, not error text parsing in frontend.
 - UTC persisted timestamps, convert to configured office timezone at relevant policy boundaries.
-- Pytest unit/integration tests adjacent to affected domain rules.
 
 ## Branch/PR convention (proposal)
 `feature/<ticket>-short-name`, `fix/<ticket>-short-name`, `docs/<topic>`. Conventional commits recommended (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`). Require review for schema, security and policy changes.
@@ -36,5 +35,5 @@
 - [ ] No mock data or embedded production secrets
 - [ ] AuthZ, audit and privacy implications considered
 - [ ] Frontend empty/loading/error states correct
-- [ ] Backend unit + integration and frontend/E2E tests passing
+- [ ] Local lint, type, contract and build checks passing
 - [ ] Changelog, ENV and relevant docs updated
