@@ -1,4 +1,5 @@
 from time import perf_counter
+import secrets
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
@@ -29,6 +30,15 @@ app.add_middleware(
 async def request_context(request: Request, call_next):
     request.state.request_id = str(uuid4())
     started = perf_counter()
+    proxy_secret = settings().clockin_proxy_secret
+    if request.url.path.startswith("/api/v1/") and proxy_secret:
+        if not secrets.compare_digest(
+            request.headers.get("x-clockin-proxy-secret", "").encode(), proxy_secret.encode()
+        ):
+            write_event("http.proxy_rejected", request_id=request.state.request_id)
+            return error_response(
+                request, 403, "PROXY_REJECTED", "Verified application proxy required"
+            )
     try:
         response = await call_next(request)
     except Exception:
@@ -58,6 +68,10 @@ async def request_context(request: Request, call_next):
 def error_response(request: Request, status: int, code: str, message: str, details=None):
     return JSONResponse(
         status_code=status,
+        headers={
+            "Cache-Control": "no-store",
+            "X-Request-ID": getattr(request.state, "request_id", "unknown"),
+        },
         content={
             "error": {"code": code, "message": message, "details": details or []},
             "request_id": getattr(request.state, "request_id", "unknown"),

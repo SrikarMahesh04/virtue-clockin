@@ -2,6 +2,7 @@
 
 import json
 import logging
+import sys
 from datetime import UTC, datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -42,6 +43,10 @@ if not logger.handlers:
         if settings().app_env == "test"
         else file_handler(Path(__file__).resolve().parents[1] / "logs" / "clockin.log")
     )
+    if settings().app_env == "production":
+        stream = logging.StreamHandler(sys.stdout)
+        stream.setFormatter(JsonFormatter())
+        logger.addHandler(stream)
 
 
 def write_event(event_name: str, **fields: Any) -> None:

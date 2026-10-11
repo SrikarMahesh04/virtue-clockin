@@ -18,6 +18,7 @@ playwright-report/
 *.tsbuildinfo
 backend/logs/*.log*
 tmp/
+.netlify/
 *.pem
 *.key
 *.p12

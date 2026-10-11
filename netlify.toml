@@ -1,0 +1,20 @@
+[build]
+  base = "frontend"
+  command = "pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  PNPM_VERSION = "11.25.0"
+  NEXT_TELEMETRY_DISABLED = "1"
+  # Browser requests stay on the Netlify origin; the edge proxy calls FastAPI.
+  NEXT_PUBLIC_API_BASE_URL = ""
+
+[[edge_functions]]
+  function = "clockin-api"
+  path = "/api/v1/*"
+
+[dev]
+  command = "pnpm dev"
+  targetPort = 3000
+  port = 8888

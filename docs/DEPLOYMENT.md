@@ -6,7 +6,7 @@ Follow README: create your own PostgreSQL database, migrate, bootstrap a real ad
 
 ## Hosting decision
 
-Keep frontend and FastAPI separately deployable. Evaluate Vercel for Next.js and either a supported Python runtime or a Docker-free managed Python host. This implementation creates no paid resources or production deployment.
+Use Netlify for Next.js and a Docker-free Render Python service with managed PostgreSQL for the backend. See [Netlify and Render setup](NETLIFY.md) for exact settings, credential scopes and the owner-approved release process. Repository configuration does not create paid resources or certify production acceptance.
 
 Choose HTTPS same-site application/API domains or an explicit same-origin proxy. Validate cookies, CORS and CSRF on exact final origins. Unrelated hosting domains may break cookie authentication. Verify trusted proxies and how the API sees actual employee office egress IP; never trust arbitrary forwarded headers.
 

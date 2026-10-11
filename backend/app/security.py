@@ -30,6 +30,16 @@ def verify(encoded: str | None, value: str) -> bool:
 
 
 def client_ip(request: Request) -> str:
+    proxy_secret = settings().clockin_proxy_secret
+    if proxy_secret:
+        if not secrets.compare_digest(
+            request.headers.get("x-clockin-proxy-secret", "").encode(), proxy_secret.encode()
+        ):
+            raise HTTPException(403, "PROXY_REJECTED: Verified application proxy required")
+        try:
+            return str(ipaddress.ip_address(request.headers.get("x-clockin-client-ip", "")))
+        except ValueError:
+            raise HTTPException(403, "NETWORK_INVALID: Invalid verified visitor network") from None
     peer = request.client.host if request.client else "127.0.0.1"
     trusted = [
         ipaddress.ip_network(v.strip())

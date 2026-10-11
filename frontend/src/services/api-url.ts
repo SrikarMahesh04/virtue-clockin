@@ -19,6 +19,10 @@ export function resolveApiUrl(
   configured: string | undefined,
   browserOrigin?: string,
 ): string {
+  // Hosted builds use the same-origin Netlify proxy; local development stays direct.
+  if (!configured && process.env.NODE_ENV === "production") {
+    return browserOrigin || "";
+  }
   const target = new URL(configured || "http://localhost:8000");
   if (browserOrigin) {
     const browser = new URL(browserOrigin);

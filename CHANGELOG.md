@@ -1,5 +1,11 @@
 # Changelog
 
+## 11-Oct-2026 - Netlify production deployment preparation
+
+- Added Netlify monorepo build settings and a same-origin API edge proxy. Hosted builds no longer default to a visitor's localhost API.
+- Added authenticated visitor-IP forwarding, fail-closed production proxy configuration, a backend startup/migration script and production stdout logs. Local environment files and direct development calls remain unchanged.
+- Documented separate Netlify/Render configuration, private secret scopes, backend/database provisioning and owner-approved publication. No company data or credentials are committed.
+
 ## 11-Oct-2026 - Build and Code Checks workflow
 
 - Added independent GitHub backend/frontend jobs for locked dependencies, lint/types, Python formatting, OpenAPI/client contract consistency and the production build. Removed tests remain excluded.

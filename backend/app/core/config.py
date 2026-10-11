@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     app_base_url: str = "http://localhost:3000"
     cookie_secure: bool = False
     trusted_proxy_cidrs: str = ""
+    clockin_proxy_secret: str = ""
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_username: str = ""
@@ -50,4 +51,28 @@ def settings() -> Settings:
         not value.cookie_secure or not value.frontend_origin.startswith("https://")
     ):
         raise ValueError("Production requires secure cookies and an HTTPS frontend origin")
+    if value.app_env == "production" and len(value.clockin_proxy_secret) < 32:
+        raise ValueError(
+            "Production requires a private CLOCKIN_PROXY_SECRET of at least 32 characters"
+        )
+    if value.app_env == "production":
+        for origin in (value.frontend_origin, value.app_base_url):
+            parsed = urlsplit(origin)
+            if (
+                parsed.scheme != "https"
+                or not parsed.hostname
+                or parsed.hostname in ("localhost", "127.0.0.1", "::1")
+                or parsed.username
+                or parsed.password
+                or parsed.path
+                or parsed.query
+                or parsed.fragment
+            ):
+                raise ValueError(
+                    "Production frontend/link origins must be exact public HTTPS origins"
+                )
+        if value.app_base_url != value.frontend_origin:
+            raise ValueError("Production account links must use the configured frontend origin")
+        if not value.database_url:
+            raise ValueError("Production requires DATABASE_URL")
     return value

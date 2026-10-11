@@ -11,6 +11,7 @@ Copy the separate frontend/backend `.env.example` files to ignored local environ
 | APP_BASE_URL | Frontend origin used for account links |
 | COOKIE_SECURE | false locally, true on production HTTPS |
 | TRUSTED_PROXY_CIDRS | Comma-separated trusted proxies; empty for direct local requests |
+| CLOCKIN_PROXY_SECRET | Empty locally; private shared secret of at least 32 characters required in production to authenticate Netlify API proxy requests. Never public. |
 | SMTP_HOST / SMTP_PORT | Optional SMTP endpoint |
 | SMTP_USERNAME / SMTP_PASSWORD / SMTP_FROM | Private credentials and approved sender |
 | SMTP_STARTTLS | true by default |
@@ -24,5 +25,7 @@ Coordinates, geofence, accuracy, approved office CIDRs and weekly offs belong in
 Google Maps: set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` in `frontend/.env.local`. Enable Maps JavaScript API and Geocoding API in your billing-enabled Google project. Use a browser key restricted to your frontend websites and those APIs. Restart/rebuild the frontend after changing these variables. See [Google Maps setup](docs/GOOGLE_MAPS.md). Missing configuration is shown explicitly; no live provider success is assumed.
 
 Missing database => readiness fails. Missing office policy => punches blocked. Missing SMTP => email recovery/dispatch explicitly unavailable. SSO and scheduled reminders are deferred.
+
+On Netlify, an empty `NEXT_PUBLIC_API_BASE_URL` uses same-origin API calls. Set `CLOCKIN_BACKEND_ORIGIN` and `CLOCKIN_PROXY_SECRET` privately in Functions scope, Production context only; see `docs/NETLIFY.md`. Local `.env` files remain separate and unchanged.
 
 Phone development: loopback API configuration follows the browser's local/private hostname and protocol (including LAN IPv4 and `.local` names). Both ports must be reachable. Use trusted HTTPS for mobile location access; [phone setup](docs/PHONE_ACCESS.md) covers TLS and a local-subnet-only Windows firewall rule.

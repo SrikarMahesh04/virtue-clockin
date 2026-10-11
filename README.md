@@ -32,3 +32,5 @@ Configure your office and employee accounts after signing in. Maps and email ser
 Never commit passwords, API keys, database credentials or private environment files. Example configuration contains placeholders only; local configuration, runtime logs and generated build files are excluded from Git. Existing accounts and attendance data are not included in this repository.
 
 See [deployment](docs/DEPLOYMENT.md) for operator guidance. [GitHub Actions](docs/GITHUB_ACTIONS.md) checks builds, code quality and API contracts; automated test suites remain excluded.
+
+Hosting: [Netlify frontend and Render backend setup](docs/NETLIFY.md). Local and production configuration are separate; publish future changes only after owner approval.
