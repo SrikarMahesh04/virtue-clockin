@@ -5,6 +5,7 @@
 - Explicitly enabled Netlify's Next.js adapter so App Router pages are deployed with their server function rather than raw build output.
 - Added an empty-database-only operator bootstrap activation option. The first Super Admin chooses credentials privately through a single-use link; no default password, PIN or employee data is created.
 - Clarified Free environment scopes and private operator activation in the hosting runbook.
+- Convert Render's HTML wake-up page into a truthful temporary API-unavailable response; credential and punch requests are never retried automatically.
 
 ## 11-Oct-2026 - Neon project tooling
 

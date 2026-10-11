@@ -88,6 +88,15 @@ export default async function proxy(request, context) {
       redirect: "error",
       signal: AbortSignal.timeout(20000),
     });
+    // Free hosting can return a 200 HTML wake-up page instead of API data.
+    // Never mistake that page for a successful credential or punch response.
+    if (upstream.headers.get("content-type")?.includes("text/html")) {
+      await upstream.body?.cancel();
+      return unavailable(
+        "API_WAKING_UP",
+        "The hosted API is starting. Wait about a minute, then try again.",
+      );
+    }
     const outgoing = new Headers({ "cache-control": "no-store" });
     for (const name of responseHeaders) {
       const value = upstream.headers.get(name);
