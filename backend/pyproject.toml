@@ -2,10 +2,11 @@
 name = "virtue-clockin"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "sqlalchemy>=2.0,<2.1", "alembic>=1.14,<2", "psycopg[binary]>=3.2,<4", "pydantic-settings>=2.7,<3", "argon2-cffi>=23.1", "email-validator>=2.2", "tzdata>=2025.1"]
+dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "sqlalchemy>=2.0,<2.1", "alembic>=1.14,<2", "psycopg[binary]>=3.2,<4", "pydantic-settings>=2.7,<3", "argon2-cffi>=23.1", "email-validator>=2.2", "tzdata>=2025.1", "google-auth>=2.40,<3", "requests>=2.32,<3"]
 
 [dependency-groups]
 dev = ["ruff>=0.11", "mypy>=1.15"]
+mail-setup = ["google-auth-oauthlib>=1.2,<2"]
 
 [tool.ruff]
 line-length = 100

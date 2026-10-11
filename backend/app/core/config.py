@@ -1,6 +1,8 @@
 from functools import lru_cache
+from typing import Literal
 from urllib.parse import urlsplit, urlunsplit
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +16,11 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     trusted_proxy_cidrs: str = ""
     clockin_proxy_secret: str = ""
+    email_provider: Literal["smtp", "gmail_api"] = "smtp"
+    gmail_client_id: str = ""
+    gmail_client_secret: SecretStr = SecretStr("")
+    gmail_refresh_token: SecretStr = SecretStr("")
+    gmail_sender: str = ""
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_username: str = ""
@@ -41,7 +48,18 @@ class Settings(BaseSettings):
 
     @property
     def email_configured(self) -> bool:
+        if self.email_provider == "gmail_api":
+            return bool(
+                self.gmail_client_id
+                and self.gmail_client_secret.get_secret_value()
+                and self.gmail_refresh_token.get_secret_value()
+                and self.gmail_sender
+            )
         return bool(self.smtp_host and self.smtp_from)
+
+    @property
+    def email_sender(self) -> str:
+        return self.gmail_sender if self.email_provider == "gmail_api" else self.smtp_from
 
 
 @lru_cache

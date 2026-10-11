@@ -28,3 +28,5 @@ skills-lock.json
 *.key
 *.p12
 *.pfx
+client_secret*.json
+gmail-oauth*.json

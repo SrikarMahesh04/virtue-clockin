@@ -1,5 +1,4 @@
 import secrets
-import smtplib
 from datetime import date, datetime, timedelta
 from email.message import EmailMessage
 from typing import Any
@@ -10,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.email_delivery import EmailDeliveryError, deliver_email
 from app.operational_logs import record_change
 from app.domain import EXPECTED_DEDUCTION_MINUTES, GRACE_MINUTES, calculate, utc
 from app.models import (
@@ -337,19 +337,14 @@ def send_link(email: str, token: str, purpose: str) -> None:
         )
     path = "activate" if purpose == "activation" else "reset-password"
     message = EmailMessage()
-    message["From"], message["To"] = config.smtp_from, email
+    message["From"], message["To"] = config.email_sender, email
     message["Subject"] = "Virtue ClockIn account " + purpose
     message.set_content(
         f"Open this single-use link within 30 minutes:\n{config.app_base_url}/{path}#token={token}\nIf you did not request this, contact your administrator."
     )
     try:
-        with smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=15) as smtp:
-            if config.smtp_starttls:
-                smtp.starttls()
-            if config.smtp_username:
-                smtp.login(config.smtp_username, config.smtp_password)
-            smtp.send_message(message)
-    except (OSError, smtplib.SMTPException):
+        deliver_email(message, config)
+    except EmailDeliveryError:
         raise HTTPException(
             503, "DEPENDENCY_UNAVAILABLE: Email delivery failed. Try again later."
         ) from None

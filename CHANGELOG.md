@@ -1,5 +1,10 @@
 # Changelog
 
+## 11-Oct-2026 - Gmail API delivery preparation
+
+- Added server-side Gmail API delivery over HTTPS while retaining local SMTP as default.
+- Added a private send-only OAuth operator utility and production configuration guide. Credentials and live email verification remain required before hosted delivery can work.
+
 ## 11-Oct-2026 - Hosted routing and first account activation
 
 - Explicitly enabled Netlify's Next.js adapter so App Router pages are deployed with their server function rather than raw build output.
