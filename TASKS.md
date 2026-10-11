@@ -17,7 +17,7 @@
 - [x] Calendar views, employee/all-employee Holiday and Work from home scheduling, in-app notifications.
 - [x] Filtered attendance/CSV including Work from home, true dashboard counters.
 - [x] Administrator-only workspace, header sign-out, no admin punch APIs; removed integration-readiness/SSO UI.
-- Automated test suites and the GitHub test workflow were removed at the user's request for this development stage. Local lint, type, contract and build checks remain available through `scripts/check.ps1`.
+- Automated test suites remain removed at the user's request. Build and Code Checks runs lint, type, contract and production-build checks on GitHub without company credentials or a database; see `docs/GITHUB_ACTIONS.md`. Local checks remain available through `scripts/check.ps1`.
 - [x] Local setup, accepted decisions and production integration runbook.
 
 ## Company configuration / later releases

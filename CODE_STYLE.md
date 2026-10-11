@@ -14,7 +14,7 @@
 - Prefer accessible semantic HTML and keyboard interactions; use Tailwind design tokens, avoid scattered literal hex values.
 - Distinguish UI states as loading / empty / error / needs configuration / ready. Never display 0 when request failed.
 - Forms show validation errors without disclosing sensitive internal behavior.
-- Use ESLint, formatter (Prettier) and TypeScript compile checks locally. Automated test suites and their GitHub workflow are currently removed.
+- Use ESLint, formatter (Prettier) and TypeScript compile checks locally. GitHub Build and Code Checks verifies lint, types, contracts and production compilation; automated test suites remain removed.
 
 ## Backend (Python FastAPI)
 - Python 3 typing and Pydantic v2 for external DTOs. Ruff lint + format; selected Python static type checker.

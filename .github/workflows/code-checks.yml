@@ -1,0 +1,133 @@
+name: Build and Code Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  UV_NO_PROGRESS: "1"
+
+jobs:
+  backend:
+    name: Backend and OpenAPI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Set up Python and uv
+        uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: "0.12.24"
+          python-version: "3.12"
+      - name: Install locked backend dependencies
+        id: install
+        run: uv sync --frozen
+      - name: Check Python code
+        id: lint
+        run: uv run --frozen ruff check .
+      - name: Check Python formatting
+        id: format
+        run: uv run --frozen ruff format --check .
+      - name: Check Python types
+        id: types
+        run: uv run --frozen mypy app
+      - name: Check committed OpenAPI contract
+        id: contract
+        run: uv run --frozen python ../scripts/export_contract.py --check
+      - name: Summarize backend checks
+        if: always()
+        env:
+          INSTALL: ${{ steps.install.outcome }}
+          LINT: ${{ steps.lint.outcome }}
+          FORMAT: ${{ steps.format.outcome }}
+          TYPES: ${{ steps.types.outcome }}
+          CONTRACT: ${{ steps.contract.outcome }}
+        run: |
+          {
+            echo '## Backend and OpenAPI'
+            echo '| Check | Result |'
+            echo '| --- | --- |'
+            printf '| Dependencies | %s |\n' "$INSTALL"
+            printf '| Code quality | %s |\n' "$LINT"
+            printf '| Formatting | %s |\n' "$FORMAT"
+            printf '| Types | %s |\n' "$TYPES"
+            printf '| OpenAPI contract | %s |\n' "$CONTRACT"
+            echo 'Open the failed step for its error. Fix the code or configuration, then push the correction or rerun after a temporary service failure.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  frontend:
+    name: Frontend Build and API Types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Set up pnpm
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: "11.25.0"
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install locked frontend dependencies
+        id: install
+        run: pnpm install --frozen-lockfile
+      - name: Check frontend code
+        id: lint
+        run: pnpm lint
+      - name: Check generated API types
+        id: contract
+        run: |
+          pnpm contracts
+          pnpm exec prettier --write src/generated/schema.d.ts
+          git diff --exit-code -- src/generated/schema.d.ts
+      - name: Build production application
+        id: build
+        run: pnpm build
+      - name: Check TypeScript
+        id: types
+        run: pnpm typecheck
+      - name: Summarize frontend checks
+        if: always()
+        env:
+          INSTALL: ${{ steps.install.outcome }}
+          LINT: ${{ steps.lint.outcome }}
+          CONTRACT: ${{ steps.contract.outcome }}
+          BUILD: ${{ steps.build.outcome }}
+          TYPES: ${{ steps.types.outcome }}
+        run: |
+          {
+            echo '## Frontend Build and API Types'
+            echo '| Check | Result |'
+            echo '| --- | --- |'
+            printf '| Dependencies | %s |\n' "$INSTALL"
+            printf '| Code quality | %s |\n' "$LINT"
+            printf '| Generated API types | %s |\n' "$CONTRACT"
+            printf '| Production build | %s |\n' "$BUILD"
+            printf '| Types | %s |\n' "$TYPES"
+            echo 'Open the failed step for its error. Fix the code or configuration, then push the correction or rerun after a temporary service failure.'
+          } >> "$GITHUB_STEP_SUMMARY"

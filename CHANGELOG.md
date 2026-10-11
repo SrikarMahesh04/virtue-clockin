@@ -1,5 +1,10 @@
 # Changelog
 
+## 11-Oct-2026 - Build and Code Checks workflow
+
+- Added independent GitHub backend/frontend jobs for locked dependencies, lint/types, Python formatting, OpenAPI/client contract consistency and the production build. Removed tests remain excluded.
+- Added named-step summaries, manual runs, timeouts, cancellation of superseded runs, read-only permissions and pinned action commits. No company database, credentials or deployment is involved. Added troubleshooting guidance.
+
 ## 11-Oct-2026 - Automated test setup removed
 
 - Removed backend, frontend and browser test files, test-only configuration/dependencies/helpers, and the GitHub Actions test workflow at the user's request.

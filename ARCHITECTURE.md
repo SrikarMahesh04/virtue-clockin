@@ -15,6 +15,6 @@ Frontend routes compose feature screens and shared navigation/auth shells. All J
 
 Attendance writes serialize on employee rows and daily/idempotency uniqueness. Original attendance events are immutable. Retired audit/note tables remain historical storage only; internal operational events use rotating JSON files. Attendance snapshots capture shift, timezone, calendar classification and office policy.
 
-Cross-layer changes: acceptance criteria -> domain/DTOs/migration -> generated OpenAPI/types -> affected UI -> local lint/type/contract/build checks -> docs. Automated test suites and their GitHub workflow are currently removed at the user's request. Compatible migrations precede backend/frontend release.
+Cross-layer changes: acceptance criteria -> domain/DTOs/migration -> generated OpenAPI/types -> affected UI -> lint/type/contract/build checks -> docs. Build and Code Checks runs these checks on GitHub without company services or credentials; automated test suites remain removed at the user's request. Compatible migrations precede backend/frontend release.
 
 Initial local ports: frontend 3000, API 8000. No configured database means no readiness. Hosted deployment follows local acceptance and docs/DEPLOYMENT.md. PIN authentication is employee-chosen email/PIN by explicit user decision, replacing earlier device-binding proposals.
