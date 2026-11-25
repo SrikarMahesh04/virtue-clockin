@@ -159,6 +159,11 @@
             "title": "Local Date",
             "type": "string"
           },
+          "missing_punch_out": {
+            "readOnly": true,
+            "title": "Missing Punch Out",
+            "type": "boolean"
+          },
           "net_minutes": {
             "title": "Net Minutes",
             "type": "integer"
@@ -212,7 +217,8 @@
           "net_minutes",
           "expected_minutes",
           "late",
-          "corrected"
+          "corrected",
+          "missing_punch_out"
         ],
         "title": "AttendanceView",
         "type": "object"
@@ -869,6 +875,65 @@
         "title": "PunchInput",
         "type": "object"
       },
+      "RegularizationInput": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_punch_in": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Punch In"
+          },
+          "expected_punch_out": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Punch Out"
+          },
+          "punch_in": {
+            "format": "date-time",
+            "title": "Punch In",
+            "type": "string"
+          },
+          "punch_out": {
+            "format": "date-time",
+            "title": "Punch Out",
+            "type": "string"
+          },
+          "reason": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Reason",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 0.0,
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "punch_in",
+          "punch_out",
+          "revision",
+          "expected_punch_in",
+          "expected_punch_out"
+        ],
+        "title": "RegularizationInput",
+        "type": "object"
+      },
       "ServerTime": {
         "additionalProperties": false,
         "properties": {
@@ -1272,6 +1337,58 @@
           }
         },
         "summary": "All Attendance",
+        "tags": [
+          "attendance"
+        ]
+      }
+    },
+    "/api/v1/admin/attendance/{day_id}/regularize": {
+      "post": {
+        "operationId": "regularize_api_v1_admin_attendance__day_id__regularize_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "day_id",
+            "required": true,
+            "schema": {
+              "title": "Day Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegularizationInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Regularize",
         "tags": [
           "attendance"
         ]

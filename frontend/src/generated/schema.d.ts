@@ -21,6 +21,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/attendance/{day_id}/regularize": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Regularize */
+    post: operations["regularize_api_v1_admin_attendance__day_id__regularize_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/dashboard": {
     parameters: {
       query?: never;
@@ -673,6 +690,8 @@ export interface components {
        * Format: date
        */
       local_date: string;
+      /** Missing Punch Out */
+      readonly missing_punch_out: boolean;
       /** Net Minutes */
       net_minutes: number;
       /** Punch In */
@@ -928,6 +947,30 @@ export interface components {
       idempotency_key: string;
       location: components["schemas"]["Location"];
     };
+    /** RegularizationInput */
+    RegularizationInput: {
+      /** Expected Punch In */
+      expected_punch_in: string | null;
+      /** Expected Punch Out */
+      expected_punch_out: string | null;
+      /**
+       * Punch In
+       * Format: date-time
+       */
+      punch_in: string;
+      /**
+       * Punch Out
+       * Format: date-time
+       */
+      punch_out: string;
+      /**
+       * Reason
+       * @default
+       */
+      reason: string;
+      /** Revision */
+      revision: number;
+    };
     /** ServerTime */
     ServerTime: {
       /**
@@ -1073,6 +1116,41 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["AttendanceView"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  regularize_api_v1_admin_attendance__day_id__regularize_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        day_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RegularizationInput"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AttendanceView"];
         };
       };
       /** @description Validation Error */

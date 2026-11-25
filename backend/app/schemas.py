@@ -204,6 +204,15 @@ class PunchInput(DTO):
     idempotency_key: str = Field(min_length=16, max_length=100)
 
 
+class RegularizationInput(DTO):
+    punch_in: datetime
+    punch_out: datetime
+    reason: str = Field(default="", max_length=1000)
+    revision: int = Field(ge=0)
+    expected_punch_in: datetime | None
+    expected_punch_out: datetime | None
+
+
 class AttendanceView(DTO):
     id: str
     user_id: str
@@ -216,6 +225,20 @@ class AttendanceView(DTO):
     expected_minutes: int
     late: bool
     corrected: bool
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def missing_punch_out(self) -> bool:
+        from app.models import now
+        from app.domain import utc
+
+        end = self.snapshot.get("end")
+        return bool(
+            self.punch_in
+            and not self.punch_out
+            and end
+            and utc(datetime.fromisoformat(end)) < now()
+        )
 
 
 class Dashboard(DTO):

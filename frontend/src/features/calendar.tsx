@@ -66,12 +66,24 @@ function CalendarContent({
         result(api.GET("/api/v1/calendar-days")),
         result(api.GET("/api/v1/employees")),
       ]);
+      const attendance: Models["AttendanceView"][] = [];
+      for (let offset = 0; ; offset += 500) {
+        const page = await result(
+          api.GET("/api/v1/admin/attendance", {
+            params: {
+              query: { start: selected, end: selected, limit: 500, offset },
+            },
+          }),
+        );
+        attendance.push(...page);
+        if (page.length < 500) break;
+      }
       return {
         calendar: {
           days,
           assignments: [],
           shifts: [],
-          attendance: [],
+          attendance,
           weekly_off: [],
           timezone: "",
         } satisfies Models["CalendarData"],
@@ -139,7 +151,71 @@ function CalendarContent({
         "Inactive Employee"
       : "All Employees";
   return (
-    <div className="calendar-layout">
+    <div className={`calendar-layout ${admin ? "admin-calendar-layout" : ""}`}>
+      {admin && (
+        <section
+          className="card calendar-details"
+          aria-label="Selected Date Details"
+        >
+          <h2>Selected Date Details</h2>
+          {data ? (
+            <>
+              <div className="calendar-date-entries">
+                <h3>{dateOnlyText(selected)}</h3>
+                {selectedEntries.length ? (
+                  selectedEntries.map((day) => (
+                    <article key={day.id} className="calendar-entry">
+                      <div>
+                        <Badge value={day.kind} />
+                        <p>{day.name}</p>
+                        <small>{employeeLabel(day.user_id)}</small>
+                      </div>
+                      <button
+                        disabled={busy}
+                        aria-label={`Remove ${kindLabel(day.kind)} for ${employeeLabel(day.user_id)}`}
+                        onClick={() =>
+                          void act(
+                            () =>
+                              result(
+                                api.DELETE("/api/v1/calendar-days/{entry_id}", {
+                                  params: { path: { entry_id: day.id } },
+                                }),
+                              ),
+                            "Calendar entry removed",
+                          )
+                        }
+                      >
+                        Remove
+                      </button>
+                    </article>
+                  ))
+                ) : (
+                  <p className="muted">No calendar entry for this date.</p>
+                )}
+              </div>
+              <div className="calendar-absence-list">
+                <h3>Absent</h3>
+                {calendar?.attendance
+                  .filter(
+                    (row) =>
+                      row.status === "absent" &&
+                      (!employeeId || row.user_id === employeeId),
+                  )
+                  .map((row) => (
+                    <p key={row.id}>{employeeLabel(row.user_id)}</p>
+                  ))}
+                {!calendar?.attendance.some(
+                  (row) =>
+                    row.status === "absent" &&
+                    (!employeeId || row.user_id === employeeId),
+                ) && <p className="muted">No absent records for this date.</p>}
+              </div>
+            </>
+          ) : (
+            <LoadState loading={loading} error={error} />
+          )}
+        </section>
+      )}
       <section className="card calendar-options" aria-label="Calendar Options">
         <h2>{admin ? "Holiday or Work From Home" : "Selected Date"}</h2>
         {data ? (
@@ -226,40 +302,6 @@ function CalendarContent({
                     working days; Work From Home is recorded without punches.
                   </small>
                 </form>
-                <div className="calendar-date-entries">
-                  <h3>{dateOnlyText(selected)}</h3>
-                  {selectedEntries.length ? (
-                    selectedEntries.map((day) => (
-                      <article key={day.id} className="calendar-entry">
-                        <div>
-                          <Badge value={day.kind} />
-                          <p>{day.name}</p>
-                          <small>{employeeLabel(day.user_id)}</small>
-                        </div>
-                        <button
-                          disabled={busy}
-                          aria-label={`Remove ${kindLabel(day.kind)} for ${employeeLabel(day.user_id)}`}
-                          onClick={() =>
-                            void act(
-                              () =>
-                                result(
-                                  api.DELETE(
-                                    "/api/v1/calendar-days/{entry_id}",
-                                    { params: { path: { entry_id: day.id } } },
-                                  ),
-                                ),
-                              "Calendar entry removed",
-                            )
-                          }
-                        >
-                          Remove
-                        </button>
-                      </article>
-                    ))
-                  ) : (
-                    <p className="muted">No calendar entry for this date.</p>
-                  )}
-                </div>
               </>
             ) : (
               <>
@@ -397,7 +439,11 @@ function CalendarContent({
                     className={`calendar-cell ${selected === date ? "selected" : ""} ${date.slice(0, 7) !== selected.slice(0, 7) ? "outside" : ""}`}
                   >
                     <span>{Number(date.slice(-2))}</span>
-                    <span className="calendar-dots" aria-hidden="true">
+                    <span
+                      className="calendar-dots"
+                      aria-hidden="true"
+                      hidden={admin}
+                    >
                       {details.map((item) => (
                         <span
                           key={item.id}

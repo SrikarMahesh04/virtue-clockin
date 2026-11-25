@@ -8,11 +8,13 @@ export function Modal({
   close,
   busy = false,
   children,
+  className = "",
 }: {
   title: string;
   close: () => void;
   busy?: boolean;
   children: React.ReactNode;
+  className?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -31,7 +33,7 @@ export function Modal({
   return (
     <dialog
       ref={dialog}
-      className="shift-modal"
+      className={`shift-modal ${className}`}
       aria-labelledby={titleId}
       aria-modal="true"
       onCancel={(event) => {

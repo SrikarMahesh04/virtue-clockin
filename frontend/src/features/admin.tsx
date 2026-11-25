@@ -1,4 +1,5 @@
 "use client";
+import { RegularizeAttendance } from "./regularize-attendance";
 import { titleLabel } from "@/lib/labels";
 import {
   RecordPagination,
@@ -688,6 +689,7 @@ export function AdminAttendance() {
     [employee, setEmployee] = useState(""),
     [status, setStatus] = useState(""),
     [offset, setOffset] = useState(0);
+  const [regularizing, setRegularizing] = useState<Models["AttendanceView"]>();
   const pageSize = useRecordPageSize();
   const [rangeStart, setRangeStart] = useState(start);
   const [rangeEnd, setRangeEnd] = useState(end);
@@ -739,7 +741,7 @@ export function AdminAttendance() {
     [start, end, employee, status, offset, pageSize],
   );
   const { data, loading, error } = useLoad(loader),
-    { act, busy } = useApp();
+    { act, busy, user } = useApp();
   if (!data)
     return (
       <div className="stack">
@@ -791,6 +793,12 @@ export function AdminAttendance() {
   }
   return (
     <div className="stack">
+      {regularizing && (
+        <RegularizeAttendance
+          row={regularizing}
+          close={() => setRegularizing(undefined)}
+        />
+      )}
       <section
         className="card attendance-filter-card"
         aria-label="Attendance Filters"
@@ -853,6 +861,7 @@ export function AdminAttendance() {
               </option>
               <option value="present">Present</option>
               <option value="late">Late</option>
+              <option value="incomplete">Incomplete / Missing Punch Out</option>
               <option value="work_from_home">Work From Home</option>
             </select>
           </Field>
@@ -873,7 +882,13 @@ export function AdminAttendance() {
       </section>
       <section className="card">
         <h2>Attendance Records</h2>
-        <AttendanceTable rows={rows} employees={data.employees} />
+        <AttendanceTable
+          rows={rows}
+          employees={data.employees}
+          onRegularize={
+            user.role === "super_admin" ? setRegularizing : undefined
+          }
+        />
         <RecordPagination
           offset={offset}
           count={rows.length}

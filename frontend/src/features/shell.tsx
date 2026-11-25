@@ -258,7 +258,9 @@ export function Shell({
       <a className="skip-link button" href="#main">
         Skip to content
       </a>
-      <div className="app-shell">
+      <div
+        className={`app-shell ${area === "employee" ? "employee-shell" : ""}`}
+      >
         <aside className="sidebar">
           <Brand href={`/${area}/dashboard`} />
           <div>
@@ -276,7 +278,16 @@ export function Shell({
                     className={`nav-link ${screen === page ? "active" : ""}`}
                   >
                     <Icon />
-                    {titles[page]}
+                    <span className="nav-label">{titles[page]}</span>
+                    {area === "employee" && (
+                      <span className="employee-nav-short">
+                        {page === "notifications"
+                          ? "Alerts"
+                          : page === "profile"
+                            ? "Profile"
+                            : titles[page]}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -285,12 +296,12 @@ export function Shell({
         </aside>
         <div>
           <header className="topbar">
-            <span className="muted">
+            <span className="muted workspace-label">
               {area === "admin"
                 ? "Organization Workspace"
                 : "Employee Workspace"}
             </span>
-            <div className="row">
+            <div className="row account-controls">
               <ServerClock />
               {area === "employee" && (
                 <Link aria-label="Notifications" href="/employee/notifications">
@@ -298,6 +309,8 @@ export function Shell({
                 </Link>
               )}
               <span
+                className="account-name"
+                title={user.name}
                 style={{ borderLeft: "1px solid #30424c", paddingLeft: 16 }}
               >
                 {user.name}

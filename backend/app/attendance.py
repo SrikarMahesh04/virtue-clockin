@@ -1,7 +1,7 @@
 import csv
 import io
 import ipaddress
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.domain import distance_m, utc
 from app.models import AttendanceDay, AttendanceEvent, LateFlag, User, now
-from app.schemas import AdminDashboard, AttendanceView, Dashboard, PunchInput
+from app.schemas import AdminDashboard, AttendanceView, Dashboard, PunchInput, RegularizationInput
 from app.security import admin, client_ip, employee_only, lock, locked_user, throttle
 from app.services import (
     log_event,
@@ -84,6 +84,80 @@ def all_attendance(
     db: Session = Depends(get_db),
 ):
     return daily_records(db, *date_window(db, start, end), employee_id, status, limit, offset)
+
+
+@router.post("/admin/attendance/{day_id}/regularize", response_model=AttendanceView)
+def regularize(
+    day_id: str,
+    data: RegularizationInput,
+    request: Request,
+    user: User = Depends(admin),
+    db: Session = Depends(get_db),
+):
+    if user.role != "super_admin":
+        raise HTTPException(403, "FORBIDDEN: Super Admin access required")
+    day = db.get(AttendanceDay, day_id)
+    if not day:
+        raise HTTPException(404, "NOT_FOUND: Saved attendance record not found")
+    locked_user(db, day.user_id)
+    db.refresh(day, with_for_update=True)
+    if day.corrected:
+        raise HTTPException(409, "ALREADY_REGULARIZED: This record has already been regularized")
+
+    def normalized(value):
+        return utc(value) if value else None
+
+    if normalized(day.punch_in) != normalized(data.expected_punch_in) or normalized(
+        day.punch_out
+    ) != normalized(data.expected_punch_out):
+        raise HTTPException(409, "CONFLICT: Punches changed. Refresh the record")
+    history = list(day.snapshot.get("regularizations", []))
+    if len(history) != data.revision:
+        raise HTTPException(409, "CONFLICT: Record changed. Refresh before regularizing")
+    if data.punch_in.tzinfo is None or data.punch_out.tzinfo is None:
+        raise HTTPException(422, "INVALID_TIME: Include the office timezone offset")
+    zone = ZoneInfo(day.snapshot["timezone"])
+    if (
+        data.punch_in.astimezone(zone).date() != day.local_date
+        or data.punch_out.astimezone(zone).date() != day.local_date
+        or data.punch_out <= data.punch_in
+        or data.punch_out > now()
+    ):
+        raise HTTPException(422, "INVALID_TIME: Use ordered, non-future punches on the record date")
+    before = {
+        "punch_in": day.punch_in.isoformat() if day.punch_in else None,
+        "punch_out": day.punch_out.isoformat() if day.punch_out else None,
+        "status": day.status,
+        "net_minutes": day.net_minutes,
+    }
+    if (
+        day.punch_in
+        and day.punch_out
+        and utc(day.punch_in) == utc(data.punch_in)
+        and utc(day.punch_out) == utc(data.punch_out)
+    ):
+        raise HTTPException(422, "NO_CHANGE: Enter a changed punch time")
+    day.punch_in, day.punch_out = data.punch_in, data.punch_out
+    day.corrected = True
+    recalculate(db, day, user)
+    history.append(
+        {
+            "before": before,
+            "after": {
+                "punch_in": day.punch_in.isoformat(),
+                "punch_out": day.punch_out.isoformat(),
+                "status": day.status,
+                "net_minutes": day.net_minutes,
+            },
+            "reason": data.reason.strip(),
+            "actor_id": user.id,
+            "at": now().isoformat(),
+        }
+    )
+    day.snapshot = {**day.snapshot, "regularizations": history}
+    log_event(db, user, "attendance.regularized", day.id, request=request)
+    db.commit()
+    return day
 
 
 def punch(kind: str, data: PunchInput, request: Request, user: User, db: Session):
@@ -258,6 +332,33 @@ def safe_cell(value: object) -> str:
     return "'" + text if text.lstrip().startswith(("=", "+", "-", "@", "\t", "\r", "\n")) else text
 
 
+def regularization_summary(history: list[dict], zone: ZoneInfo) -> str:
+    summaries = []
+    for change in history:
+        before, after = change.get("before", {}), change.get("after", {})
+        parts = []
+        for key, label in (("punch_in", "Punch In"), ("punch_out", "Punch Out")):
+            if before.get(key) != after.get(key):
+                times = [
+                    utc(datetime.fromisoformat(value)).astimezone(zone).strftime("%I:%M %p")
+                    if value
+                    else "Missing"
+                    for value in (before.get(key), after.get(key))
+                ]
+                parts.append(f"{label}: {times[0]} -> {times[1]}")
+        if before.get("status") != after.get("status"):
+            parts.append(
+                f"{str(before.get('status', '')).replace('_', ' ').title()} -> {str(after.get('status', '')).replace('_', ' ').title()}"
+            )
+        if change.get("at"):
+            timestamp = utc(datetime.fromisoformat(change["at"])).astimezone(zone)
+            parts.append(timestamp.strftime("Updated %d-%b-%Y %I:%M %p"))
+        if change.get("reason"):
+            parts.append("Reason: " + change["reason"])
+        summaries.append("; ".join(parts))
+    return " | ".join(summaries)
+
+
 @router.get("/reports/attendance.csv", response_class=Response)
 def export(
     start: date,
@@ -286,6 +387,9 @@ def export(
             "Net Hours",
             "Expected Hours",
             "Late",
+            "Missing Punch Out",
+            "Regularized",
+            "Regularization Summary",
         ]
     )
     for day in rows:
@@ -313,6 +417,9 @@ def export(
                     else f"{day.net_minutes // 60}h {day.net_minutes % 60}min",
                     f"{day.expected_minutes // 60}h {day.expected_minutes % 60}min",
                     day.late,
+                    day.missing_punch_out,
+                    day.corrected,
+                    regularization_summary(day.snapshot.get("regularizations", []), zone),
                 ]
             ]
         )

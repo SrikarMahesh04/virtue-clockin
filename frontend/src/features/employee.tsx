@@ -24,9 +24,11 @@ import { dateOnlyText, durationText, timeText } from "@/lib/time";
 export function AttendanceTable({
   rows,
   employees = [],
+  onRegularize,
 }: {
   rows: Models["AttendanceView"][];
   employees?: Models["UserView"][];
+  onRegularize?: (row: Models["AttendanceView"]) => void;
 }) {
   if (!rows.length)
     return (
@@ -46,12 +48,13 @@ export function AttendanceTable({
             <th>Net Hours</th>
             <th>Expected Hours</th>
             <th>Status</th>
+            {onRegularize && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.id}>
-              <td>
+              <td data-label="Date">
                 {dateOnlyText(row.local_date)}
                 {row.snapshot.derived === true && (
                   <>
@@ -66,18 +69,34 @@ export function AttendanceTable({
                     row.user_id}
                 </td>
               )}
-              <td>{dateText(row.punch_in, String(row.snapshot.timezone))}</td>
-              <td>{dateText(row.punch_out, String(row.snapshot.timezone))}</td>
-              <td>
+              <td data-label="Punch In">
+                {dateText(row.punch_in, String(row.snapshot.timezone))}
+              </td>
+              <td data-label="Punch Out">
+                {dateText(row.punch_out, String(row.snapshot.timezone))}
+              </td>
+              <td data-label="Net Hours">
                 {row.status === "work_from_home" && !row.punch_in
                   ? "—"
                   : durationText(row.net_minutes)}
               </td>
-              <td>{durationText(row.expected_minutes)}</td>
-              <td>
-                <Badge value={row.status} />
-                {row.corrected && <small> · Corrected</small>}
+              <td data-label="Expected Hours">
+                {durationText(row.expected_minutes)}
               </td>
+              <td data-label="Status">
+                <Badge value={row.status} />
+              </td>
+              {onRegularize && (
+                <td>
+                  {row.corrected ? (
+                    <span>Regularized</span>
+                  ) : row.snapshot.derived !== true ? (
+                    <button onClick={() => onRegularize(row)}>
+                      Regularize
+                    </button>
+                  ) : null}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -196,7 +215,7 @@ export function EmployeeDashboard() {
       <section className="card">
         <div className="row spread">
           <div>
-            <h2>Today’S Attendance</h2>
+            <h2>Today’s Attendance</h2>
             <p className="muted">
               {data.shift
                 ? `${timeText(data.shift.starts_at)} – ${timeText(data.shift.ends_at)}`
@@ -211,7 +230,7 @@ export function EmployeeDashboard() {
             required or available.
           </p>
         ) : (
-          <div className="row">
+          <div className="row employee-punch-actions">
             <button
               className="primary"
               disabled={busy || !data.shift || Boolean(attendance?.punch_in)}
@@ -371,7 +390,10 @@ export function Notifications() {
   );
   return (
     <section className="card">
-      <div className="row" style={{ marginBottom: 24 }}>
+      <div
+        className="row employee-notification-filters"
+        style={{ marginBottom: 24 }}
+      >
         {["all", "unread", "attendance", "late_arrival", "calendar"].map(
           (f) => (
             <button
