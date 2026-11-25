@@ -1360,7 +1360,7 @@ input::-ms-reveal {
   .employee-shell .sidebar nav {
     position: fixed;
     z-index: 40;
-    inset: auto auto calc(24px + env(safe-area-inset-bottom, 0px)) 50%;
+    inset: auto auto calc(6px + env(safe-area-inset-bottom, 0px)) 50%;
     transform: translateX(-50%);
     width: min(520px, calc(100% - 28px));
     display: grid;
