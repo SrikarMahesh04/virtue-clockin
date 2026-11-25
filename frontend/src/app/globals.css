@@ -1686,19 +1686,20 @@ input::-ms-reveal {
     content: "";
     position: fixed;
     z-index: 39;
-    inset: auto 0 0;
-    height: calc(128px + env(safe-area-inset-bottom, 0px));
+    /* Cover Safari's translucent toolbar region below the visual viewport. */
+    inset: auto 0 -120px;
+    height: calc(248px + env(safe-area-inset-bottom, 0px));
     pointer-events: none;
     background: linear-gradient(
       to bottom,
       rgb(11 17 20 / 0%),
-      rgb(11 17 20 / 85%) 65%,
-      #0b1114
+      rgb(11 17 20 / 85%) 80px,
+      #0b1114 128px
     );
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    -webkit-mask-image: linear-gradient(to bottom, transparent, black 55%);
-    mask-image: linear-gradient(to bottom, transparent, black 55%);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 70px);
+    mask-image: linear-gradient(to bottom, transparent, black 70px);
   }
   .employee-shell .main-content,
   .employee-shell .calendar-page {
